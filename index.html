@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weinfeld Consulting — Transformation. Change. Results.</title>
+  <meta name="description" content="Senior Consultant für digitale Transformation, KI-Prozesse, Change Management und Interim Management. Zürich / Berlin.">
+  <meta property="og:title" content="Weinfeld Consulting">
+  <meta property="og:description" content="Transformation. Change. Results.">
+  <meta property="og:url" content="https://weinfeld-consulting.ch">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --black: #000; --white: #fff; --gray: #888; --light: #f5f5f3; --border: rgba(0,0,0,0.1); }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--white); color: var(--black); overflow-x: hidden; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 20px 48px; background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px); border-bottom: 0.5px solid var(--border);
+      opacity: 0;
+    }
+    .nav-logo { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 500; text-decoration: none; color: var(--black); }
+    .nav-links { display: flex; gap: 32px; list-style: none; align-items: center; }
+    .nav-links a { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; color: var(--gray); transition: color 0.2s; }
+    .nav-links a:hover { color: var(--black); }
+    .nav-cta { padding: 8px 18px; background: var(--black); color: var(--white) !important; letter-spacing: 0.08em; }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr;
+      padding-top: 65px; position: relative; overflow: hidden;
+    }
+    #grid-canvas { position: absolute; inset: 0; z-index: 0; opacity: 0.35; }
+    .hero-left {
+      padding: 64px 48px; display: flex; flex-direction: column;
+      justify-content: flex-end; position: relative; z-index: 2;
+      border-right: 0.5px solid var(--border);
+    }
+    .hero-right {
+      position: relative; z-index: 2; overflow: hidden; background: #111;
+    }
+    .hero-photo {
+      width: 100%; height: 100%; object-fit: cover; object-position: center top;
+      opacity: 0; display: block;
+    }
+    .hero-eyebrow { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gray); margin-bottom: 20px; opacity: 0; }
+    .hero-tagline { font-size: clamp(36px, 5vw, 56px); font-weight: 900; letter-spacing: -0.03em; line-height: 1.0; overflow: hidden; }
+    .hero-tagline span { display: block; transform: translateY(110%); }
+    .hero-sub { font-size: 14px; color: var(--gray); line-height: 1.7; margin-top: 24px; max-width: 380px; opacity: 0; }
+    .hero-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 28px; opacity: 0; }
+    .hero-tag { font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; padding: 5px 11px; border: 0.5px solid rgba(0,0,0,0.2); color: var(--gray); }
+
+    /* STATS */
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); }
+    .stat { padding: 28px 48px; border-right: 0.5px solid var(--border); opacity: 0; transform: translateY(20px); }
+    .stat:last-child { border-right: none; }
+    .stat-num { font-size: 40px; font-weight: 900; letter-spacing: -0.03em; line-height: 1; }
+    .stat-label { font-size: 11px; color: var(--gray); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 6px; }
+
+    /* SERVICES */
+    .services { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 0.5px solid var(--border); }
+    .service { padding: 36px 48px; border-right: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); opacity: 0; transform: translateY(16px); transition: background 0.2s; }
+    .service:hover { background: var(--light); }
+    .service:nth-child(2n) { border-right: none; }
+    .service:nth-child(3), .service:nth-child(4) { border-bottom: none; }
+    .service-num { font-size: 10px; color: #ccc; letter-spacing: 0.12em; margin-bottom: 14px; }
+    .service-title { font-size: 16px; font-weight: 500; margin-bottom: 8px; }
+    .service-desc { font-size: 13px; color: var(--gray); line-height: 1.6; }
+
+    /* REFERENCES */
+    .refs { padding: 40px 48px; border-bottom: 0.5px solid var(--border); }
+    .section-label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gray); margin-bottom: 24px; }
+    .logos { display: flex; gap: 0; flex-wrap: wrap; border: 0.5px solid var(--border); }
+    .logo-item { font-size: 13px; font-weight: 500; letter-spacing: 0.03em; padding: 14px 24px; border-right: 0.5px solid var(--border); color: #555; white-space: nowrap; }
+    .logo-item:last-child { border-right: none; }
+
+    /* ABOUT */
+    .about { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 0.5px solid var(--border); }
+    .about-left { padding: 48px; border-right: 0.5px solid var(--border); }
+    .about-right { padding: 48px; background: var(--light); }
+    .about-title { font-size: clamp(24px, 3vw, 32px); font-weight: 900; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 20px; }
+    .about-text { font-size: 14px; color: var(--gray); line-height: 1.8; }
+    .timeline { list-style: none; }
+    .timeline li { display: flex; gap: 20px; padding: 14px 0; border-bottom: 0.5px solid var(--border); align-items: baseline; }
+    .timeline li:last-child { border-bottom: none; }
+    .timeline-year { font-size: 11px; color: #aaa; min-width: 80px; letter-spacing: 0.04em; }
+    .timeline-text { font-size: 13px; font-weight: 500; }
+    .timeline-co { font-size: 12px; color: var(--gray); }
+
+    /* CONTACT */
+    .contact { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 0.5px solid var(--border); }
+    .contact-left { padding: 48px; border-right: 0.5px solid var(--border); display: flex; flex-direction: column; justify-content: center; }
+    .contact-right { padding: 48px; display: flex; flex-direction: column; justify-content: center; gap: 16px; }
+    .contact-title { font-size: clamp(24px, 3vw, 36px); font-weight: 900; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 12px; }
+    .contact-sub { font-size: 14px; color: var(--gray); line-height: 1.6; }
+    .contact-btn { display: inline-block; padding: 12px 28px; background: var(--black); color: var(--white); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; transition: opacity 0.2s; width: fit-content; }
+    .contact-btn:hover { opacity: 0.7; }
+    .contact-detail { font-size: 13px; color: var(--gray); }
+    .contact-detail a { color: var(--black); text-decoration: none; }
+
+    /* FOOTER */
+    footer { padding: 20px 48px; display: flex; justify-content: space-between; align-items: center; }
+    .footer-copy { font-size: 11px; color: var(--gray); }
+    .footer-links { display: flex; gap: 24px; }
+    .footer-links a { font-size: 11px; color: var(--gray); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--black); }
+
+    @media (max-width: 768px) {
+      nav { padding: 16px 24px; }
+      .nav-links { display: none; }
+      .hero { grid-template-columns: 1fr; }
+      .hero-right { height: 50vh; }
+      .hero-left { padding: 40px 24px; }
+      .stats { grid-template-columns: 1fr; }
+      .stat { border-right: none; border-bottom: 0.5px solid var(--border); padding: 20px 24px; }
+      .services { grid-template-columns: 1fr; }
+      .service { border-right: none; }
+      .about, .contact { grid-template-columns: 1fr; }
+      .about-left, .about-right, .contact-left, .contact-right { border-right: none; padding: 32px 24px; }
+      .refs { padding: 32px 24px; }
+      footer { padding: 16px 24px; flex-direction: column; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav id="nav">
+  <a href="/" class="nav-logo">Weinfeld Consulting</a>
+  <ul class="nav-links">
+    <li><a href="#services">Leistungen</a></li>
+    <li><a href="#refs">Referenzen</a></li>
+    <li><a href="#about">Über mich</a></li>
+    <li><a href="#contact" class="nav-cta">Kontakt</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <canvas id="grid-canvas"></canvas>
+  <div class="hero-left">
+    <p class="hero-eyebrow">Senior Consultant · Zürich / Berlin</p>
+    <h1 class="hero-tagline">
+      <span>Transformation.</span>
+      <span>Change.</span>
+      <span>Results.</span>
+    </h1>
+    <p class="hero-sub">Digitale Transformation, KI-Prozesse und Interim Management — für Unternehmen, die Veränderung konsequent umsetzen wollen.</p>
+    <div class="hero-tags">
+      <span class="hero-tag">ERP & Transformation</span>
+      <span class="hero-tag">KI & Automatisierung</span>
+      <span class="hero-tag">Change Management</span>
+      <span class="hero-tag">Interim</span>
+      <span class="hero-tag">Rollout</span>
+    </div>
+  </div>
+  <div class="hero-right">
+    <img class="hero-photo" src="photo.png" alt="Edmond Weinfeld">
+  </div>
+</section>
+
+<section class="stats">
+  <div class="stat"><div class="stat-num">20+</div><div class="stat-label">Jahre Erfahrung</div></div>
+  <div class="stat"><div class="stat-num">32</div><div class="stat-label">Internationale Märkte</div></div>
+  <div class="stat"><div class="stat-num">CH · DE</div><div class="stat-label">Standorte</div></div>
+</section>
+
+<section class="services" id="services">
+  <div class="service">
+    <div class="service-num">01</div>
+    <div class="service-title">ERP & Transformation</div>
+    <div class="service-desc">ERP-Einführung und -Migration, Requirements Management, UAT-Koordination, Rollout-Steuerung — von der Anforderung bis zum Go-live.</div>
+  </div>
+  <div class="service">
+    <div class="service-num">02</div>
+    <div class="service-title">KI & Automatisierung</div>
+    <div class="service-desc">Analyse von KI- und Automatisierungspotenzialen, Requirements Engineering für KI-gestützte Prozesse, Steuerung zwischen Fachbereich und IT.</div>
+  </div>
+  <div class="service">
+    <div class="service-num">03</div>
+    <div class="service-title">Interim Management</div>
+    <div class="service-desc">Chief of Staff, Head of Product, Teilprojektleitung auf Zeit — operative Steuerung und Stabilisierung in kritischen Projektphasen.</div>
+  </div>
+  <div class="service">
+    <div class="service-num">04</div>
+    <div class="service-title">Change & Rollout</div>
+    <div class="service-desc">Internationale Rollouts, Markt-Enablement, Change-Governance und Stakeholder Management — strukturiert und umsetzungsorientiert.</div>
+  </div>
+</section>
+
+<section class="refs" id="refs">
+  <div class="section-label">Referenzen</div>
+  <div class="logos">
+    <span class="logo-item">Volkswagen Group</span>
+    <span class="logo-item">Daimler</span>
+    <span class="logo-item">Helaba</span>
+    <span class="logo-item">Capgemini</span>
+    <span class="logo-item">O2</span>
+    <span class="logo-item">F24</span>
+    <span class="logo-item">Swisscom</span>
+    <span class="logo-item">dormakaba</span>
+  </div>
+</section>
+
+<section class="about" id="about">
+  <div class="about-left">
+    <h2 class="about-title">Über 20 Jahre an der Schnittstelle von Business und Technologie.</h2>
+    <p class="about-text">Ich begleite Unternehmen durch komplexe Transformationsprojekte — als Senior Consultant, Interim Manager und Requirements-Spezialist. Mein Fokus liegt auf der Verbindung von strategischer Klarheit und operativer Umsetzung.</p>
+  </div>
+  <div class="about-right">
+    <div class="section-label">Ausgewählte Projekte</div>
+    <ul class="timeline">
+      <li>
+        <span class="timeline-year">2025 –</span>
+        <div><div class="timeline-text">ERP-Transformation WOX</div><div class="timeline-co">Wascosa AG via arumiq</div></div>
+      </li>
+      <li>
+        <span class="timeline-year">2025 –</span>
+        <div><div class="timeline-text">KI-Automatisierung Logistik & Finance</div><div class="timeline-co">Big Picture GmbH, Berlin</div></div>
+      </li>
+      <li>
+        <span class="timeline-year">2024 – 25</span>
+        <div><div class="timeline-text">Chief of Staff / Transformation</div><div class="timeline-co">HÖF via arumiq</div></div>
+      </li>
+      <li>
+        <span class="timeline-year">2023 – 24</span>
+        <div><div class="timeline-text">Interim Head of Product Marketing</div><div class="timeline-co">F24 AG</div></div>
+      </li>
+      <li>
+        <span class="timeline-year">2016 – 23</span>
+        <div><div class="timeline-text">Teilprojektleitung Market Management</div><div class="timeline-co">Volkswagen Group (32 Märkte)</div></div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section class="contact" id="contact">
+  <div class="contact-left">
+    <h2 class="contact-title">Sprechen wir über Ihr Projekt.</h2>
+    <p class="contact-sub">Ich freue mich auf ein erstes Gespräch — unverbindlich und direkt.</p>
+  </div>
+  <div class="contact-right">
+    <a href="mailto:edmond@weinfeld-consulting.ch" class="contact-btn">Gespräch anfragen →</a>
+    <p class="contact-detail">Mail: <a href="mailto:edmond@weinfeld-consulting.ch">edmond@weinfeld-consulting.ch</a></p>
+    <p class="contact-detail">LinkedIn: <a href="https://linkedin.com/in/edmondweinfeld" target="_blank">linkedin.com/in/edmondweinfeld</a></p>
+    <p class="contact-detail">Zürich · Berlin · Remote</p>
+  </div>
+</section>
+
+<footer>
+  <span class="footer-copy">© 2026 Weinfeld Consulting</span>
+  <div class="footer-links">
+    <a href="mailto:edmond@weinfeld-consulting.ch">Kontakt</a>
+    <a href="https://linkedin.com/in/edmondweinfeld" target="_blank">LinkedIn</a>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+// Grid canvas animation
+(function(){
+  const canvas = document.getElementById('grid-canvas');
+  const ctx = canvas.getContext('2d');
+  function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const COLS = 24, ROWS = 16;
+  const points = [];
+  for(let r=0;r<=ROWS;r++) for(let c=0;c<=COLS;c++){
+    points.push({ x: c/COLS, y: r/ROWS, ox: c/COLS, oy: r/ROWS, vx:0, vy:0 });
+  }
+
+  function noise(x,y,t){
+    return Math.sin(x*3.2+t*0.4)*Math.cos(y*2.8+t*0.35)*0.015
+          +Math.sin(x*1.5+y*2+t*0.6)*0.008;
+  }
+
+  function draw(t){
+    const W=canvas.width, H=canvas.height;
+    ctx.clearRect(0,0,W,H);
+    ctx.strokeStyle='rgba(0,0,0,0.18)';
+    ctx.lineWidth=0.5;
+
+    // Update points
+    points.forEach(p=>{
+      p.x = p.ox + noise(p.ox, p.oy, t);
+      p.y = p.oy + noise(p.oy, p.ox, t*1.1);
+    });
+
+    // Draw grid lines
+    for(let r=0;r<=ROWS;r++){
+      ctx.beginPath();
+      for(let c=0;c<=COLS;c++){
+        const p = points[r*(COLS+1)+c];
+        const px = p.x*W, py = p.y*H;
+        if(c===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+      }
+      ctx.stroke();
+    }
+    for(let c=0;c<=COLS;c++){
+      ctx.beginPath();
+      for(let r=0;r<=ROWS;r++){
+        const p = points[r*(COLS+1)+c];
+        const px = p.x*W, py = p.y*H;
+        if(r===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+      }
+      ctx.stroke();
+    }
+    requestAnimationFrame(t2=>draw(t2*0.001));
+  }
+  draw(0);
+})();
+
+// Entrance animations
+const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
+tl.to('#nav', { opacity:1, duration:0.6, delay:0.2 })
+  .to('.hero-eyebrow', { opacity:1, duration:0.5 }, '-=0.2')
+  .to('.hero-tagline span', { translateY:'0%', duration:0.9, stagger:0.1 }, '-=0.3')
+  .to('.hero-sub', { opacity:1, duration:0.6 }, '-=0.4')
+  .to('.hero-tags', { opacity:1, duration:0.5 }, '-=0.3')
+  .to('.hero-photo', { opacity:1, duration:1.0 }, '-=0.8');
+
+// Scroll animations
+gsap.utils.toArray('.stat').forEach((el,i) => {
+  gsap.to(el, { opacity:1, translateY:0, duration:0.6, ease:'power3.out', delay:i*0.1,
+    scrollTrigger: { trigger: el, start:'top 85%' } });
+});
+gsap.utils.toArray('.service').forEach((el,i) => {
+  gsap.to(el, { opacity:1, translateY:0, duration:0.6, ease:'power3.out', delay:i*0.08,
+    scrollTrigger: { trigger: el, start:'top 85%' } });
+});
+</script>
+</body>
+</html>
