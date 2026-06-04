@@ -212,35 +212,6 @@
   </div>
 </section>
 
-<section style="border-bottom:0.5px solid var(--border);padding:48px;background:var(--light);position:relative;overflow:hidden;">
-  <div class="section-label" style="margin-bottom:32px;">Von der Idee zur Umsetzung</div>
-  <div style="display:flex;align-items:center;gap:0;position:relative;z-index:2;">
-    <div style="flex:1;text-align:center;">
-      <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#aaa;margin-bottom:8px;">01</div>
-      <div style="font-size:16px;font-weight:500;">Prozesse</div>
-      <div style="font-size:12px;color:#888;margin-top:6px;line-height:1.5;">Analyse & Requirements</div>
-    </div>
-    <div style="flex:0 0 60px;text-align:center;color:#ccc;font-size:20px;">→</div>
-    <div style="flex:1;text-align:center;">
-      <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#aaa;margin-bottom:8px;">02</div>
-      <div style="font-size:16px;font-weight:500;">Automatisierung</div>
-      <div style="font-size:12px;color:#888;margin-top:6px;line-height:1.5;">Potenziale & Design</div>
-    </div>
-    <div style="flex:0 0 60px;text-align:center;color:#ccc;font-size:20px;">→</div>
-    <div style="flex:1;text-align:center;">
-      <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#aaa;margin-bottom:8px;">03</div>
-      <div style="font-size:16px;font-weight:500;">KI</div>
-      <div style="font-size:12px;color:#888;margin-top:6px;line-height:1.5;">Implementierung & Steuerung</div>
-    </div>
-    <div style="flex:0 0 60px;text-align:center;color:#ccc;font-size:20px;">→</div>
-    <div style="flex:1;text-align:center;">
-      <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#aaa;margin-bottom:8px;">04</div>
-      <div style="font-size:16px;font-weight:500;">Results</div>
-      <div style="font-size:12px;color:#888;margin-top:6px;line-height:1.5;">Rollout & Go-live</div>
-    </div>
-  </div>
-</section>
-
 <section class="refs" id="refs">
   <div class="section-label">Referenzen</div>
   <div class="logos">
@@ -349,8 +320,8 @@ gsap.registerPlugin(ScrollTrigger);
   function draw(t){
     const W=canvas.width, H=canvas.height;
     ctx.clearRect(0,0,W,H);
-    ctx.strokeStyle='rgba(0,0,0,0.28)';
-    ctx.lineWidth=0.8;
+    ctx.strokeStyle='rgba(0,0,0,0.22)';
+    ctx.lineWidth=0.7;
 
     // Update points
     points.forEach(p=>{
@@ -377,6 +348,56 @@ gsap.registerPlugin(ScrollTrigger);
       }
       ctx.stroke();
     }
+    // Animated journey dots
+    const steps = [
+      { label: 'Prozesse', x: 0.15 },
+      { label: 'Automatisierung', x: 0.38 },
+      { label: 'KI', x: 0.62 },
+      { label: 'Results', x: 0.85 },
+    ];
+    const dotY = 0.5;
+    const speed = 0.00018;
+
+    steps.forEach((step, i) => {
+      const progress = ((t + i * 0.22) * speed) % 1;
+      const px = step.x * W;
+      const py = dotY * H;
+
+      // Trail
+      ctx.beginPath();
+      ctx.arc(px, py, 4, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(0,0,0,0.7)';
+      ctx.fill();
+
+      // Pulse ring
+      const pulse = (Math.sin(t * 0.003 + i * 1.2) + 1) * 0.5;
+      ctx.beginPath();
+      ctx.arc(px, py, 4 + pulse * 8, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(0,0,0,${0.15 - pulse * 0.1})`;
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+
+      // Label
+      ctx.font = '500 10px Inter, sans-serif';
+      ctx.letterSpacing = '0.08em';
+      ctx.fillStyle = 'rgba(0,0,0,0.55)';
+      ctx.textAlign = 'center';
+      ctx.fillText(step.label.toUpperCase(), px, py - 14);
+
+      // Connector line to next
+      if(i < steps.length - 1) {
+        const nx = steps[i+1].x * W;
+        ctx.beginPath();
+        ctx.moveTo(px + 5, py);
+        ctx.lineTo(nx - 5, py);
+        ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+        ctx.lineWidth = 0.5;
+        ctx.setLineDash([4, 6]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    });
+
     requestAnimationFrame(t2=>draw(t2*0.001));
   }
   draw(0);
