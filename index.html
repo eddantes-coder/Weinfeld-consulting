@@ -323,40 +323,45 @@ gsap.registerPlugin(ScrollTrigger);
          + Math.sin(x*1.5 + y*2  + t*0.6) * 0.008;
   }
 
-  // Journey: 4 phases — Prozesse · Potenziale · Automatisierung · KI
-  // No labels, just dots that light up as a signal travels left → right
-  const PHASES = [
-    { nx: 0.15 },  // Prozesse
-    { nx: 0.38 },  // Potenziale
-    { nx: 0.62 },  // Automatisierung
-    { nx: 0.85 },  // KI
-  ];
-
-  const CYCLE   = 8.0;   // seconds per full loop
-  const TRAVEL  = 0.72;  // fraction of cycle the signal is moving
-  const HOLD    = 0.12;  // fraction where all dots stay lit
-  const FADEOUT = 0.16;  // fraction for fade-out before reset
+  // Mouse tracking — smoothly interpolated
+  let mouseX = 0.5, mouseY = 0.5;
+  let targetX = 0.5, targetY = 0.5;
+  window.addEventListener('mousemove', e => {
+    targetX = e.clientX / window.innerWidth;
+    targetY = e.clientY / window.innerHeight;
+  });
 
   let startTime = null;
 
-  function easeInOut(t){ return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
-
   function draw(ts){
     if(!startTime) startTime = ts;
-    const t = (ts - startTime) * 0.001; // seconds
+    const t = (ts - startTime) * 0.001;
+
+    // Smooth mouse lerp
+    mouseX += (targetX - mouseX) * 0.05;
+    mouseY += (targetY - mouseY) * 0.05;
 
     const W = canvas.width, H = canvas.height;
     ctx.clearRect(0, 0, W, H);
 
-    // ── Grid ──────────────────────────────────────────────
     ctx.strokeStyle = 'rgba(0,0,0,0.22)';
     ctx.lineWidth   = 0.7;
 
+    // Update grid points: ambient noise + mouse attraction
+    const REACH    = 0.32;  // how far mouse influence extends (normalised)
+    const STRENGTH = 0.055; // max pull toward cursor
+
     points.forEach(p => {
-      p.x = p.ox + noise(p.ox, p.oy, t);
-      p.y = p.oy + noise(p.oy, p.ox, t * 1.1);
+      const dx   = mouseX - p.ox;
+      const dy   = mouseY - p.oy;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      const pull = Math.max(0, 1 - dist / REACH) * STRENGTH;
+
+      p.x = p.ox + noise(p.ox, p.oy, t) + dx * pull;
+      p.y = p.oy + noise(p.oy, p.ox, t * 1.1) + dy * pull;
     });
 
+    // Draw grid
     for(let r = 0; r <= ROWS; r++){
       ctx.beginPath();
       for(let c = 0; c <= COLS; c++){
@@ -373,109 +378,6 @@ gsap.registerPlugin(ScrollTrigger);
       }
       ctx.stroke();
     }
-
-    // ── Journey signal ────────────────────────────────────
-    const cyclePos = (t % CYCLE) / CYCLE; // 0..1
-
-    // Global alpha: fade in at start, fade out near end
-    let globalAlpha = 1;
-    if(cyclePos < 0.04) {
-      globalAlpha = cyclePos / 0.04;
-    } else if(cyclePos > (TRAVEL + HOLD)) {
-      globalAlpha = Math.max(0, 1 - (cyclePos - (TRAVEL + HOLD)) / FADEOUT);
-    }
-
-    // Signal progress (0..1 during TRAVEL phase, then 1 until reset)
-    const signalProgress = cyclePos <= TRAVEL
-      ? easeInOut(cyclePos / TRAVEL)
-      : 1;
-
-    const lineY   = H * 0.72;
-    const x0      = PHASES[0].nx * W;
-    const x1      = PHASES[PHASES.length-1].nx * W;
-    const signalX = x0 + (x1 - x0) * signalProgress;
-
-    // Connecting dashed line
-    ctx.save();
-    ctx.globalAlpha = 0.07 * globalAlpha;
-    ctx.beginPath();
-    ctx.moveTo(x0, lineY);
-    ctx.lineTo(x1, lineY);
-    ctx.strokeStyle = '#000';
-    ctx.lineWidth   = 0.6;
-    ctx.setLineDash([2, 10]);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.restore();
-
-    // Travelling signal dot
-    if(cyclePos <= TRAVEL){
-      ctx.save();
-      ctx.globalAlpha = 0.55 * globalAlpha;
-      ctx.beginPath();
-      ctx.arc(signalX, lineY, 2, 0, Math.PI*2);
-      ctx.fillStyle = '#000';
-      ctx.fill();
-      ctx.restore();
-
-      // Signal trail
-      ctx.save();
-      const grad = ctx.createLinearGradient(Math.max(x0, signalX - 60), lineY, signalX, lineY);
-      grad.addColorStop(0, 'rgba(0,0,0,0)');
-      grad.addColorStop(1, `rgba(0,0,0,${0.08 * globalAlpha})`);
-      ctx.beginPath();
-      ctx.moveTo(Math.max(x0, signalX - 60), lineY);
-      ctx.lineTo(signalX, lineY);
-      ctx.strokeStyle = grad;
-      ctx.lineWidth   = 0.8;
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    // Phase dots
-    PHASES.forEach((phase, i) => {
-      const px = phase.nx * W;
-      // When does the signal reach this phase dot? (0..1 of signalProgress)
-      const phaseThreshold = i / (PHASES.length - 1);
-      const passed = signalProgress >= phaseThreshold;
-
-      // Proximity glow: how close is the signal right now?
-      const dist = Math.abs(signalProgress - phaseThreshold);
-      const proximity = cyclePos <= TRAVEL ? Math.max(0, 1 - dist * 7) : 0;
-
-      ctx.save();
-      ctx.globalAlpha = globalAlpha;
-
-      // Outer glow ring when signal arrives
-      if(proximity > 0.05){
-        const glowRadius = 5 + proximity * 22;
-        const glowAlpha  = proximity * 0.09;
-        ctx.beginPath();
-        ctx.arc(px, lineY, glowRadius, 0, Math.PI*2);
-        ctx.fillStyle = `rgba(0,0,0,${glowAlpha})`;
-        ctx.fill();
-      }
-
-      // Main dot
-      const dotRadius = 4;
-      ctx.beginPath();
-      ctx.arc(px, lineY, dotRadius, 0, Math.PI*2);
-
-      if(passed){
-        // Lit: solid black, slightly larger at moment of ignition
-        const boost = proximity * 1.5;
-        ctx.arc(px, lineY, dotRadius + boost, 0, Math.PI*2);
-        ctx.fillStyle = `rgba(0,0,0,${0.75 + proximity * 0.25})`;
-        ctx.fill();
-      } else {
-        // Not yet: hollow ring
-        ctx.strokeStyle = 'rgba(0,0,0,0.18)';
-        ctx.lineWidth   = 0.8;
-        ctx.stroke();
-      }
-
-      ctx.restore();
-    });
 
     requestAnimationFrame(draw);
   }
