@@ -348,25 +348,59 @@ gsap.registerPlugin(ScrollTrigger);
       }
       ctx.stroke();
     }
-    // Single wandering dot — finds its way through the grid
-    const dotAngleX = t * 0.28;
-    const dotAngleY = t * 0.17;
-    const dotX = (0.1 + 0.8 * (Math.sin(dotAngleX) * 0.5 + 0.5)) * W;
-    const dotY2 = (0.15 + 0.7 * (Math.sin(dotAngleY) * 0.5 + 0.5)) * H;
+    // Journey: 4 phases lighting up sequentially along a horizontal line
+    const phases = [
+      { x: 0.18, label: 'Prozesse' },
+      { x: 0.38, label: 'Potenziale' },
+      { x: 0.62, label: 'Automatisierung' },
+      { x: 0.82, label: 'KI' },
+    ];
+    const cycleTime = 5.0; // seconds per full cycle
+    const journeyT = (t % cycleTime) / cycleTime; // 0..1
 
-    // Subtle trail
+    const lineY = H * 0.5;
+
+    // Connecting line
     ctx.beginPath();
-    ctx.arc(dotX, dotY2, 3.5, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+    ctx.moveTo(phases[0].x * W, lineY);
+    ctx.lineTo(phases[phases.length-1].x * W, lineY);
+    ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+    ctx.lineWidth = 0.5;
+    ctx.setLineDash([3,6]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Animated signal dot travelling along the line
+    const signalX = (phases[0].x + (phases[phases.length-1].x - phases[0].x) * journeyT) * W;
+    ctx.beginPath();
+    ctx.arc(signalX, lineY, 2.5, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
     ctx.fill();
 
-    // Soft pulse ring
-    const pulse = (Math.sin(t * 0.004) + 1) * 0.5;
-    ctx.beginPath();
-    ctx.arc(dotX, dotY2, 3.5 + pulse * 10, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(0,0,0,${0.12 - pulse * 0.08})`;
-    ctx.lineWidth = 0.6;
-    ctx.stroke();
+    // Phase dots — light up as signal passes
+    phases.forEach((phase, i) => {
+      const px = phase.x * W;
+      const phasePos = (phase.x - phases[0].x) / (phases[phases.length-1].x - phases[0].x);
+      const passed = journeyT >= phasePos;
+      const proximity = Math.max(0, 1 - Math.abs(journeyT - phasePos) * 8);
+
+      // Dot
+      const radius = 4 + proximity * 4;
+      const alpha = passed ? 0.7 : 0.15;
+      ctx.beginPath();
+      ctx.arc(px, lineY, radius, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(0,0,0,${alpha + proximity * 0.3})`;
+      ctx.fill();
+
+      // Pulse when signal arrives
+      if(proximity > 0.1) {
+        ctx.beginPath();
+        ctx.arc(px, lineY, 4 + proximity * 18, 0, Math.PI*2);
+        ctx.strokeStyle = `rgba(0,0,0,${proximity * 0.15})`;
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+      }
+    });
 
     requestAnimationFrame(t2=>draw(t2*0.001));
   }
