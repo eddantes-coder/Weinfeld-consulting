@@ -164,7 +164,7 @@
 <section class="hero">
   <canvas id="grid-canvas"></canvas>
   <div class="hero-left">
-    <p class="hero-eyebrow">Senior Consultant</p>
+    <p class="hero-eyebrow">Consulting · Interim · Project Management</p>
     <h1 class="hero-tagline">
       <span>Transformation.</span>
       <span>Change.</span>
@@ -281,8 +281,7 @@
   <div class="contact-right">
     <a href="mailto:edmond@weinfeld-consulting.ch" class="contact-btn">Gespräch anfragen →</a>
     <p class="contact-detail">Mail: <a href="mailto:edmond@weinfeld-consulting.ch">edmond@weinfeld-consulting.ch</a></p>
-    <p class="contact-detail">LinkedIn: <a href="https://linkedin.com/in/edmondweinfeld" target="_blank">linkedin.com/in/edmondweinfeld</a></p>
-    <p class="contact-detail">Zürich · Berlin · Remote</p>
+    <p class="contact-detail">St. Gallen · Remote</p>
   </div>
 </section>
 
@@ -349,55 +348,26 @@ gsap.registerPlugin(ScrollTrigger);
       }
       ctx.stroke();
     }
-    // Animated journey dots
-    const steps = [
-      { label: 'Prozesse', x: 0.15 },
-      { label: 'Automatisierung', x: 0.38 },
-      { label: 'KI', x: 0.62 },
-      { label: 'Results', x: 0.85 },
-    ];
-    const dotY = 0.5;
-    const speed = 0.00018;
+    // Single wandering dot — finds its way through the grid
+    const dotProgress = (t * 0.00008) % 1;
+    const dotAngleX = t * 0.00031;
+    const dotAngleY = t * 0.00019;
+    const dotX = (0.1 + 0.8 * (Math.sin(dotAngleX) * 0.5 + 0.5)) * W;
+    const dotY2 = (0.15 + 0.7 * (Math.sin(dotAngleY) * 0.5 + 0.5)) * H;
 
-    steps.forEach((step, i) => {
-      const progress = ((t + i * 0.22) * speed) % 1;
-      const px = step.x * W;
-      const py = dotY * H;
+    // Subtle trail
+    ctx.beginPath();
+    ctx.arc(dotX, dotY2, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+    ctx.fill();
 
-      // Trail
-      ctx.beginPath();
-      ctx.arc(px, py, 4, 0, Math.PI*2);
-      ctx.fillStyle = 'rgba(0,0,0,0.7)';
-      ctx.fill();
-
-      // Pulse ring
-      const pulse = (Math.sin(t * 0.003 + i * 1.2) + 1) * 0.5;
-      ctx.beginPath();
-      ctx.arc(px, py, 4 + pulse * 8, 0, Math.PI*2);
-      ctx.strokeStyle = `rgba(0,0,0,${0.15 - pulse * 0.1})`;
-      ctx.lineWidth = 0.8;
-      ctx.stroke();
-
-      // Label
-      ctx.font = '500 10px Inter, sans-serif';
-      ctx.letterSpacing = '0.08em';
-      ctx.fillStyle = 'rgba(0,0,0,0.55)';
-      ctx.textAlign = 'center';
-      ctx.fillText(step.label.toUpperCase(), px, py - 14);
-
-      // Connector line to next
-      if(i < steps.length - 1) {
-        const nx = steps[i+1].x * W;
-        ctx.beginPath();
-        ctx.moveTo(px + 5, py);
-        ctx.lineTo(nx - 5, py);
-        ctx.strokeStyle = 'rgba(0,0,0,0.08)';
-        ctx.lineWidth = 0.5;
-        ctx.setLineDash([4, 6]);
-        ctx.stroke();
-        ctx.setLineDash([]);
-      }
-    });
+    // Soft pulse ring
+    const pulse = (Math.sin(t * 0.004) + 1) * 0.5;
+    ctx.beginPath();
+    ctx.arc(dotX, dotY2, 3.5 + pulse * 10, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(0,0,0,${0.12 - pulse * 0.08})`;
+    ctx.lineWidth = 0.6;
+    ctx.stroke();
 
     requestAnimationFrame(t2=>draw(t2*0.001));
   }
