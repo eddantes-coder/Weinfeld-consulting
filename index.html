@@ -243,7 +243,7 @@
       </div>
     </div>
     <h2 class="about-title">Über 20 Jahre an der Schnittstelle von Business und Technologie.</h2>
-    <p class="about-text">Ich begleite Unternehmen durch komplexe Transformationsprojekte — als Senior Consultant, Interim Manager und Requirements-Spezialist. Mein Fokus liegt auf der Verbindung von strategischer Klarheit und operativer Umsetzung.</p>
+    <p class="about-text">Ich begleite Unternehmen durch komplexe Transformationsprojekte — als Senior Consultant, Interim Manager und Requirements-Spezialist. Mein Fokus liegt auf der Verbindung von strategischer Klarheit und operativer Umsetzung — und darauf, dass Menschen dabei mitgenommen werden, nicht nur Prozesse.</p>
   </div>
   <div class="about-right">
     <div class="section-label">Ausgewählte Projekte</div>
@@ -302,109 +302,185 @@ gsap.registerPlugin(ScrollTrigger);
 (function(){
   const canvas = document.getElementById('grid-canvas');
   const ctx = canvas.getContext('2d');
-  function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+
+  function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
   resize();
   window.addEventListener('resize', resize);
 
   const COLS = 24, ROWS = 16;
   const points = [];
-  for(let r=0;r<=ROWS;r++) for(let c=0;c<=COLS;c++){
-    points.push({ x: c/COLS, y: r/ROWS, ox: c/COLS, oy: r/ROWS, vx:0, vy:0 });
+  for(let r = 0; r <= ROWS; r++) {
+    for(let c = 0; c <= COLS; c++){
+      points.push({ x: c/COLS, y: r/ROWS, ox: c/COLS, oy: r/ROWS });
+    }
   }
 
-  function noise(x,y,t){
-    return Math.sin(x*3.2+t*0.4)*Math.cos(y*2.8+t*0.35)*0.015
-          +Math.sin(x*1.5+y*2+t*0.6)*0.008;
+  function noise(x, y, t){
+    return Math.sin(x*3.2 + t*0.4) * Math.cos(y*2.8 + t*0.35) * 0.015
+         + Math.sin(x*1.5 + y*2  + t*0.6) * 0.008;
   }
 
-  function draw(t){
-    const W=canvas.width, H=canvas.height;
-    ctx.clearRect(0,0,W,H);
-    ctx.strokeStyle='rgba(0,0,0,0.22)';
-    ctx.lineWidth=0.7;
+  // Journey: 4 phases — Prozesse · Potenziale · Automatisierung · KI
+  // No labels, just dots that light up as a signal travels left → right
+  const PHASES = [
+    { nx: 0.15 },  // Prozesse
+    { nx: 0.38 },  // Potenziale
+    { nx: 0.62 },  // Automatisierung
+    { nx: 0.85 },  // KI
+  ];
 
-    // Update points
-    points.forEach(p=>{
+  const CYCLE   = 8.0;   // seconds per full loop
+  const TRAVEL  = 0.72;  // fraction of cycle the signal is moving
+  const HOLD    = 0.12;  // fraction where all dots stay lit
+  const FADEOUT = 0.16;  // fraction for fade-out before reset
+
+  let startTime = null;
+
+  function easeInOut(t){ return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+
+  function draw(ts){
+    if(!startTime) startTime = ts;
+    const t = (ts - startTime) * 0.001; // seconds
+
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    // ── Grid ──────────────────────────────────────────────
+    ctx.strokeStyle = 'rgba(0,0,0,0.22)';
+    ctx.lineWidth   = 0.7;
+
+    points.forEach(p => {
       p.x = p.ox + noise(p.ox, p.oy, t);
-      p.y = p.oy + noise(p.oy, p.ox, t*1.1);
+      p.y = p.oy + noise(p.oy, p.ox, t * 1.1);
     });
 
-    // Draw grid lines
-    for(let r=0;r<=ROWS;r++){
+    for(let r = 0; r <= ROWS; r++){
       ctx.beginPath();
-      for(let c=0;c<=COLS;c++){
+      for(let c = 0; c <= COLS; c++){
         const p = points[r*(COLS+1)+c];
-        const px = p.x*W, py = p.y*H;
-        if(c===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+        c === 0 ? ctx.moveTo(p.x*W, p.y*H) : ctx.lineTo(p.x*W, p.y*H);
       }
       ctx.stroke();
     }
-    for(let c=0;c<=COLS;c++){
+    for(let c = 0; c <= COLS; c++){
       ctx.beginPath();
-      for(let r=0;r<=ROWS;r++){
+      for(let r = 0; r <= ROWS; r++){
         const p = points[r*(COLS+1)+c];
-        const px = p.x*W, py = p.y*H;
-        if(r===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+        r === 0 ? ctx.moveTo(p.x*W, p.y*H) : ctx.lineTo(p.x*W, p.y*H);
       }
       ctx.stroke();
     }
-    // Journey: 4 phases lighting up sequentially along a horizontal line
-    const phases = [
-      { x: 0.18, label: 'Prozesse' },
-      { x: 0.38, label: 'Potenziale' },
-      { x: 0.62, label: 'Automatisierung' },
-      { x: 0.82, label: 'KI' },
-    ];
-    const cycleTime = 5.0; // seconds per full cycle
-    const journeyT = (t % cycleTime) / cycleTime; // 0..1
 
-    const lineY = H * 0.5;
+    // ── Journey signal ────────────────────────────────────
+    const cyclePos = (t % CYCLE) / CYCLE; // 0..1
 
-    // Connecting line
+    // Global alpha: fade in at start, fade out near end
+    let globalAlpha = 1;
+    if(cyclePos < 0.04) {
+      globalAlpha = cyclePos / 0.04;
+    } else if(cyclePos > (TRAVEL + HOLD)) {
+      globalAlpha = Math.max(0, 1 - (cyclePos - (TRAVEL + HOLD)) / FADEOUT);
+    }
+
+    // Signal progress (0..1 during TRAVEL phase, then 1 until reset)
+    const signalProgress = cyclePos <= TRAVEL
+      ? easeInOut(cyclePos / TRAVEL)
+      : 1;
+
+    const lineY   = H * 0.72;
+    const x0      = PHASES[0].nx * W;
+    const x1      = PHASES[PHASES.length-1].nx * W;
+    const signalX = x0 + (x1 - x0) * signalProgress;
+
+    // Connecting dashed line
+    ctx.save();
+    ctx.globalAlpha = 0.07 * globalAlpha;
     ctx.beginPath();
-    ctx.moveTo(phases[0].x * W, lineY);
-    ctx.lineTo(phases[phases.length-1].x * W, lineY);
-    ctx.strokeStyle = 'rgba(0,0,0,0.06)';
-    ctx.lineWidth = 0.5;
-    ctx.setLineDash([3,6]);
+    ctx.moveTo(x0, lineY);
+    ctx.lineTo(x1, lineY);
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth   = 0.6;
+    ctx.setLineDash([2, 10]);
     ctx.stroke();
     ctx.setLineDash([]);
+    ctx.restore();
 
-    // Animated signal dot travelling along the line
-    const signalX = (phases[0].x + (phases[phases.length-1].x - phases[0].x) * journeyT) * W;
-    ctx.beginPath();
-    ctx.arc(signalX, lineY, 2.5, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(0,0,0,0.5)';
-    ctx.fill();
-
-    // Phase dots — light up as signal passes
-    phases.forEach((phase, i) => {
-      const px = phase.x * W;
-      const phasePos = (phase.x - phases[0].x) / (phases[phases.length-1].x - phases[0].x);
-      const passed = journeyT >= phasePos;
-      const proximity = Math.max(0, 1 - Math.abs(journeyT - phasePos) * 8);
-
-      // Dot
-      const radius = 4 + proximity * 4;
-      const alpha = passed ? 0.7 : 0.15;
+    // Travelling signal dot
+    if(cyclePos <= TRAVEL){
+      ctx.save();
+      ctx.globalAlpha = 0.55 * globalAlpha;
       ctx.beginPath();
-      ctx.arc(px, lineY, radius, 0, Math.PI*2);
-      ctx.fillStyle = `rgba(0,0,0,${alpha + proximity * 0.3})`;
+      ctx.arc(signalX, lineY, 2, 0, Math.PI*2);
+      ctx.fillStyle = '#000';
       ctx.fill();
+      ctx.restore();
 
-      // Pulse when signal arrives
-      if(proximity > 0.1) {
+      // Signal trail
+      ctx.save();
+      const grad = ctx.createLinearGradient(Math.max(x0, signalX - 60), lineY, signalX, lineY);
+      grad.addColorStop(0, 'rgba(0,0,0,0)');
+      grad.addColorStop(1, `rgba(0,0,0,${0.08 * globalAlpha})`);
+      ctx.beginPath();
+      ctx.moveTo(Math.max(x0, signalX - 60), lineY);
+      ctx.lineTo(signalX, lineY);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth   = 0.8;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Phase dots
+    PHASES.forEach((phase, i) => {
+      const px = phase.nx * W;
+      // When does the signal reach this phase dot? (0..1 of signalProgress)
+      const phaseThreshold = i / (PHASES.length - 1);
+      const passed = signalProgress >= phaseThreshold;
+
+      // Proximity glow: how close is the signal right now?
+      const dist = Math.abs(signalProgress - phaseThreshold);
+      const proximity = cyclePos <= TRAVEL ? Math.max(0, 1 - dist * 7) : 0;
+
+      ctx.save();
+      ctx.globalAlpha = globalAlpha;
+
+      // Outer glow ring when signal arrives
+      if(proximity > 0.05){
+        const glowRadius = 5 + proximity * 22;
+        const glowAlpha  = proximity * 0.09;
         ctx.beginPath();
-        ctx.arc(px, lineY, 4 + proximity * 18, 0, Math.PI*2);
-        ctx.strokeStyle = `rgba(0,0,0,${proximity * 0.15})`;
-        ctx.lineWidth = 0.8;
+        ctx.arc(px, lineY, glowRadius, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(0,0,0,${glowAlpha})`;
+        ctx.fill();
+      }
+
+      // Main dot
+      const dotRadius = 4;
+      ctx.beginPath();
+      ctx.arc(px, lineY, dotRadius, 0, Math.PI*2);
+
+      if(passed){
+        // Lit: solid black, slightly larger at moment of ignition
+        const boost = proximity * 1.5;
+        ctx.arc(px, lineY, dotRadius + boost, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(0,0,0,${0.75 + proximity * 0.25})`;
+        ctx.fill();
+      } else {
+        // Not yet: hollow ring
+        ctx.strokeStyle = 'rgba(0,0,0,0.18)';
+        ctx.lineWidth   = 0.8;
         ctx.stroke();
       }
+
+      ctx.restore();
     });
 
-    requestAnimationFrame(t2=>draw(t2*0.001));
+    requestAnimationFrame(draw);
   }
-  draw(0);
+
+  requestAnimationFrame(draw);
 })();
 
 // Entrance animations
